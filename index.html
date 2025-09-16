@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Delivery</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- شريط التنقل -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary fixed-top">
+        <div class="container">
+            <a class="navbar-brand fw-bold" href="#">
+                <i class="fas fa-shipping-fast me-2"></i>توصيل
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link active" href="#" data-page="home">
+                            <i class="fas fa-home me-1"></i> الرئيسية
+                        </a>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="moreDropdown" role="button" data-bs-toggle="dropdown">
+                            <i class="fas fa-ellipsis-h me-1"></i> المزيد
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="#" data-page="about"><i class="fas fa-info-circle me-2"></i>عن الموقع</a></li>
+                            <li><a class="dropdown-item" href="#" data-page="contact"><i class="fas fa-envelope me-2"></i>اتصل بنا</a></li>
+                        </ul>
+                    </li>
+                    <li class="nav-item" id="login-nav-item">
+                        <a class="nav-link" href="#" id="login-btn-nav">
+                            <i class="fas fa-user me-1"></i> تسجيل الدخول
+                        </a>
+                    </li>
+                    <li class="nav-item d-none" id="user-nav-item">
+                        <span class="nav-link text-light">
+                            <i class="fas fa-user-circle me-1"></i> <span id="current-user">زائر</span>
+                        </span>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" id="theme-toggle">
+                            <i class="fas fa-moon"></i>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- المحتوى الرئيسي -->
+    <main class="container mt-5 pt-4">
+        <!-- زر إنشاء منشور جديد -->
+        <div class="d-flex justify-content-end mb-4">
+            <button class="btn btn-primary rounded-pill shadow" id="create-post-btn">
+                <i class="fas fa-plus me-2"></i> طلب توصيل جديد
+            </button>
+        </div>
+
+        <!-- عوامل التصفية -->
+        <div class="card shadow-sm mb-4">
+            <div class="card-body">
+                <h5 class="card-title"><i class="fas fa-filter me-2"></i>تصفية الطلبات</h5>
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <label for="filter-city" class="form-label">المدينة</label>
+                        <select class="form-select" id="filter-city">
+                            <option value="">جميع المدن</option>
+                            <option value="الخرطوم">الخرطوم</option>
+                            <option value="أم درمان">أم درمان</option>
+                            <option value="بحري">بحري</option>
+                            <option value="الولاية الشمالية">الولاية الشمالية</option>
+                            <option value="كسلا">كسلا</option>
+                            <option value="بورتسودان">بورتسودان</option>
+                            <option value="ود مدني">ود مدني</option>
+                            <option value="الأبيض">الأبيض</option>
+                            <option value="نيالا">نيالا</option>
+                            <option value="الفاشر">الفاشر</option>
+                            <option value="الضعين">الضعين</option>
+                            <option value="أرقو">أرقو</option>
+                            <option value="دنقلا">دنقلا</option>
+                            <option value="مروي">مروي</option>
+                            <option value="كريمة">كريمة</option>
+                            <option value="نوري">نوري</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <label for="filter-market" class="form-label">السوق</label>
+                        <select class="form-select" id="filter-market">
+                            <option value="">جميع الأسواق</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <label for="filter-type" class="form-label">نوع الطلب</label>
+                        <select class="form-select" id="filter-type">
+                            <option value="">جميع الأنواع</option>
+                        </select>
+                    </div>
+                    <div class="col-12 d-flex gap-2">
+                        <button class="btn btn-primary" id="apply-filters">
+                            <i class="fas fa-check me-1"></i> تطبيق
+                        </button>
+                        <button class="btn btn-outline-secondary" id="clear-filters">
+                            <i class="fas fa-times me-1"></i> إعادة الضبط
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- قائمة المنشورات -->
+        <section id="posts-section">
+            <h4 class="mb-3"><i class="fas fa-list me-2"></i>الطلبات المتاحة</h4>
+            <div id="posts-container" class="row g-4">
+                <!-- سيتم ملء المنشورات هنا بواسطة JavaScript -->
+            </div>
+        </section>
+    </main>
+
+    <!-- نافذة إنشاء منشور -->
+    <div class="modal fade" id="create-post-modal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="fas fa-plus-circle me-2"></i>طلب توصيل جديد</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="post-form">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label for="user-name" class="form-label">اسمك</label>
+                                <input type="text" class="form-control" id="user-name" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="request-type" class="form-label">نوع الطلب</label>
+                                <input type="text" class="form-control" id="request-type" placeholder="مثال: شراء أدوية، إرسال طرد" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="city" class="form-label">المدينة</label>
+                                <select class="form-select" id="city" required>
+                                    <option value="">اختر المدينة</option>
+                                    <option value="الخرطوم">الخرطوم</option>
+                                    <option value="أم درمان">أم درمان</option>
+                                    <option value="بحري">بحري</option>
+                                    <option value="الولاية الشمالية">الولاية الشمالية</option>
+                                    <option value="كسلا">كسلا</option>
+                                    <option value="بورتسودان">بورتسودان</option>
+                                    <option value="ود مدني">ود مدني</option>
+                                    <option value="الأبيض">الأبيض</option>
+                                    <option value="نيالا">نيالا</option>
+                                    <option value="الفاشر">الفاشر</option>
+                                    <option value="الضعين">الضعين</option>
+                                    <option value="أرقو">أرقو</option>
+                                    <option value="دنقلا">دنقلا</option>
+                                    <option value="مروي">مروي</option>
+                                    <option value="كريمة">كريمة</option>
+                                    <option value="نوري">نوري</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="market-name" class="form-label">اسم السوق</label>
+                                <input type="text" class="form-control" id="market-name" placeholder="مثال: سوق الدومة، سوق العبيدية" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="payment-method" class="form-label">طريقة الدفع</label>
+                                <select class="form-select" id="payment-method" required>
+                                    <option value="دفع بعد التسليم">دفع بعد التسليم</option>
+                                    <option value="دفع مقدم">دفع مقدم</option>
+                                </select>
+                            </div>
+                            <div class="col-12">
+                                <label for="request-details" class="form-label">تفاصيل إضافية</label>
+                                <textarea class="form-control" id="request-details" rows="3" placeholder="أضف أي تفاصيل إضافية قد تساعد مقدم الخدمة..."></textarea>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+                    <button type="button" class="btn btn-primary" id="submit-post">نشر الطلب</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- نافذة تسجيل الدخول -->
+    <div class="modal fade" id="login-modal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="fas fa-user me-2"></i>تسجيل الدخول</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="login-form">
+                        <div class="mb-3">
+                            <label for="login-name" class="form-label">اسم المستخدم</label>
+                            <input type="text" class="form-control" id="login-name" required>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+                    <button type="button" class="btn btn-primary" id="submit-login">دخول</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- نافذة التقييم -->
+    <div class="modal fade" id="rating-modal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="fas fa-star me-2"></i>تقييم الخدمة</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="rating-form">
+                        <input type="hidden" id="rating-post-id">
+                        <div class="mb-3 text-center">
+                            <div class="rating-stars mb-3">
+                                <i class="far fa-star fa-2x" data-value="1"></i>
+                                <i class="far fa-star fa-2x" data-value="2"></i>
+                                <i class="far fa-star fa-2x" data-value="3"></i>
+                                <i class="far fa-star fa-2x" data-value="4"></i>
+                                <i class="far fa-star fa-2x" data-value="5"></i>
+                            </div>
+                            <label class="form-label">اضغط على عدد النجوم المناسب للتقييم</label>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+                    <button type="button" class="btn btn-primary" id="submit-rating">إرسال التقييم</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- الصفحة التعريفية -->
+    <div id="about-page" class="page container mt-5 pt-4 d-none">
+        <div class="card shadow">
+            <div class="card-body">
+                <h2 class="card-title"><i class="fas fa-info-circle me-2"></i>عن موقع توصيل</h2>
+                <p class="card-text">هذا الموقع يهدف إلى تسهيل عملية التوصيل في السودان عن طريق ربط سكان المنازل بالأشخاص المتواجدين في الأسواق أو الذين يعملون في مجال التوصيل باستخدام وسائل النقل المحلية المختلفة.</p>
+                
+                <h4 class="mt-4">كيفية استخدام الموقع</h4>
+                <ol>
+                    <li>قم بتسجيل الدخول باستخدام اسمك</li>
+                    <li>انقر على زر "طلب توصيل جديد" لإنشاء طلبك</li>
+                    <li>حدد المدينة والسوق ونوع الطلب وطريقة الدفع</li>
+                    <li>انتظر حتى يقوم أحد مقدمي الخدمة باستلام طلبك</li>
+                    <li>تواصل مع مقدم الخدمة لتنسيق عملية التوصيل</li>
+                    <li>بعد اكتمال الخدمة، قم بتقييم مقدم الخدمة</li>
+                </ol>
+                
+                <h4 class="mt-4">المدن المدعومة</h4>
+                <div class="row">
+                    <div class="col-md-6">
+                        <ul>
+                            <li>الخرطوم</li>
+                            <li>أم درمان</li>
+                            <li>بحري</li>
+                            <li>الولاية الشمالية</li>
+                            <li>كسلا</li>
+                            <li>بورتسودان</li>
+                            <li>أرقو</li>
+                            <li>دنقلا</li>
+                            <li>مروي</li>
+                        </ul>
+                    </div>
+                    <div class="col-md-6">
+                        <ul>
+                            <li>ود مدني</li>
+                            <li>الأبيض</li>
+                            <li>نيالا</li>
+                            <li>الفاشر</li>
+                            <li>الضعين</li>
+                            <li>كريمة</li>
+                            <li>نوري</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- صفحة اتصل بنا -->
+    <div id="contact-page" class="page container mt-5 pt-4 d-none">
+        <div class="card shadow">
+            <div class="card-body">
+                <h2 class="card-title"><i class="fas fa-envelope me-2"></i>اتصل بنا</h2>
+                <form id="contact-form">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label for="contact-name" class="form-label">اسمك</label>
+                            <input type="text" class="form-control" id="contact-name" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="contact-email" class="form-label">البريد الإلكتروني (اختياري)</label>
+                            <input type="email" class="form-control" id="contact-email">
+                        </div>
+                        <div class="col-12">
+                            <label for="contact-message" class="form-label">رسالتك</label>
+                            <textarea class="form-control" id="contact-message" rows="5" required></textarea>
+                        </div>
+                        <div class="col-12">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-paper-plane me-2"></i> إرسال
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- التذييل -->
+    <footer class="bg-light text-center py-4 mt-5">
+        <div class="container">
+            <p class="mb-0">© 2023 توصيل - خدمة التوصيل المحلي. جميع الحقوق محفوظة.</p>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
