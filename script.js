@@ -27,6 +27,9 @@ function initApp() {
     tooltipTriggerList.map(function (tooltipTriggerEl) {
         return new bootstrap.Tooltip(tooltipTriggerEl);
     });
+    
+    // تفعيل تأثيرات التمرير
+    setTimeout(setupScrollAnimations, 500);
 }
 
 // تحديث عرض اسم المستخدم
@@ -66,25 +69,32 @@ function loadPosts() {
     
     if (filteredPosts.length === 0) {
         postsContainer.innerHTML = `
-            <div class="col-12 text-center py-5">
+            <div class="col-12 text-center py-5 fade-in">
                 <i class="fas fa-inbox fa-3x mb-3 text-muted"></i>
                 <h5 class="text-muted">لا توجد طلبات متاحة حالياً</h5>
                 <p class="text-muted">كن أول من ينشر طلب توصيل!</p>
             </div>
         `;
+        // تفعيل تأثيرات التمرير بعد تحميل المحتوى
+        setTimeout(setupScrollAnimations, 100);
         return;
     }
     
-    filteredPosts.forEach(post => {
+    filteredPosts.forEach((post, index) => {
         const postElement = createPostElement(post);
+        // إضافة تأثير تأخير للتتابع
+        postElement.style.animationDelay = `${index * 0.1}s`;
         postsContainer.appendChild(postElement);
     });
+    
+    // تفعيل تأثيرات التمرير بعد تحميل المحتوى
+    setTimeout(setupScrollAnimations, 100);
 }
 
 // إنشاء عنصر منشور
 function createPostElement(post) {
     const colDiv = document.createElement('div');
-    colDiv.className = 'col-md-6 col-lg-4';
+    colDiv.className = 'col-md-6 col-lg-4 fade-in';
     
     const postDiv = document.createElement('div');
     postDiv.className = 'card post-card shadow-sm h-100';
@@ -176,21 +186,6 @@ function createPostElement(post) {
         postBody.appendChild(acceptedBy);
     }
     
-    // إظهار التقييم إذا تم تقييم الخدمة
-    if (post.rating) {
-        const ratingDiv = document.createElement('div');
-        ratingDiv.className = 'rating';
-        ratingDiv.innerHTML = `<strong>التقييم:</strong> ${generateStarRating(post.rating)}`;
-        postBody.appendChild(ratingDiv);
-    } else if (post.accepted && App.currentUser === post.author) {
-        // إظهار زر التقييم إذا كان المستخدم هو صاحب الطلب وتم استلامه
-        const rateBtn = document.createElement('button');
-        rateBtn.className = 'btn btn-sm btn-warning';
-        rateBtn.innerHTML = '<i class="fas fa-star me-1"></i> تقييم الخدمة';
-        rateBtn.addEventListener('click', () => openRatingModal(post.id));
-        postActions.appendChild(rateBtn);
-    }
-    
     postBody.appendChild(postActions);
     postDiv.appendChild(postBody);
     colDiv.appendChild(postDiv);
@@ -253,23 +248,12 @@ function setupEventListeners() {
     // إرسال تسجيل الدخول
     document.getElementById('submit-login').addEventListener('click', handleLogin);
     
-    // إرسال التقييم
-    document.getElementById('submit-rating').addEventListener('click', handleRating);
-    
     // أزرار التصفية
     document.getElementById('apply-filters').addEventListener('click', applyFilters);
     document.getElementById('clear-filters').addEventListener('click', clearFilters);
     
     // تبديل السمة
     document.getElementById('theme-toggle').addEventListener('click', toggleTheme);
-    
-    // نجوم التقييم
-    document.querySelectorAll('.rating-stars i').forEach(star => {
-        star.addEventListener('click', () => {
-            const value = parseInt(star.getAttribute('data-value'));
-            setRatingStars(value);
-        });
-    });
     
     // التنقل بين الصفحات
     document.querySelectorAll('[data-page]').forEach(link => {
@@ -279,9 +263,6 @@ function setupEventListeners() {
             showPage(page);
         });
     });
-    
-    // نموذج الاتصال
-    document.getElementById('contact-form').addEventListener('submit', handleContact);
 }
 
 // معالجة إنشاء منشور جديد
@@ -347,53 +328,6 @@ function handleLogin() {
     } else {
         showNotification('يرجى إدخال اسم المستخدم', 'warning');
     }
-}
-
-// معالجة التقييم
-function handleRating() {
-    const postId = parseInt(document.getElementById('rating-post-id').value);
-    const rating = document.querySelector('.rating-stars i.active')?.getAttribute('data-value') || 0;
-    
-    if (rating > 0) {
-        const postIndex = App.posts.findIndex(post => post.id === postId);
-        
-        if (postIndex !== -1) {
-            App.posts[postIndex].rating = parseInt(rating);
-            savePosts();
-            loadPosts();
-            
-            // إغلاق النافذة المنبثقة
-            const modal = bootstrap.Modal.getInstance(document.getElementById('rating-modal'));
-            modal.hide();
-            
-            showNotification('شكراً لتقييمك الخدمة!', 'success');
-        }
-    } else {
-        showNotification('يرجى اختيار تقييم من 1 إلى 5 نجوم', 'warning');
-    }
-}
-
-// معالجة نموذج الاتصال
-function handleContact(e) {
-    e.preventDefault();
-    
-    const name = document.getElementById('contact-name').value;
-    const message = document.getElementById('contact-message').value;
-    
-    // حفظ رسالة الاتصال (في localStorage كمثال)
-    const contacts = JSON.parse(localStorage.getItem('contacts')) || [];
-    contacts.push({
-        name: name,
-        message: message,
-        timestamp: Date.now()
-    });
-    
-    localStorage.setItem('contacts', JSON.stringify(contacts));
-    
-    // إعادة تعيين النموذج
-    document.getElementById('contact-form').reset();
-    
-    showNotification('تم إرسال رسالتك بنجاح!', 'success');
 }
 
 // استلام طلب
@@ -497,38 +431,6 @@ function openLoginModal() {
     modal.show();
 }
 
-// فتح نافذة التقييم
-function openRatingModal(postId) {
-    document.getElementById('rating-post-id').value = postId;
-    
-    // إعادة تعيين النجوم
-    document.querySelectorAll('.rating-stars i').forEach(star => {
-        star.classList.remove('active');
-        star.classList.remove('fas');
-        star.classList.add('far');
-    });
-    
-    const modal = new bootstrap.Modal(document.getElementById('rating-modal'));
-    modal.show();
-}
-
-// تعيين نجوم التقييم
-function setRatingStars(value) {
-    const stars = document.querySelectorAll('.rating-stars i');
-    
-    stars.forEach(star => {
-        const starValue = parseInt(star.getAttribute('data-value'));
-        
-        if (starValue <= value) {
-            star.classList.add('active', 'fas');
-            star.classList.remove('far');
-        } else {
-            star.classList.remove('active', 'fas');
-            star.classList.add('far');
-        }
-    });
-}
-
 // عرض صفحة محددة
 function showPage(page) {
     // إخفاء جميع الصفحات
@@ -597,6 +499,27 @@ function showNotification(message, type = 'info') {
             document.body.removeChild(notification);
         }, 500);
     }, 3000);
+}
+
+// تأثيرات التمرير
+function setupScrollAnimations() {
+    const fadeElements = document.querySelectorAll('.fade-in');
+    
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                setTimeout(() => {
+                    entry.target.classList.add('visible');
+                }, 100);
+            }
+        });
+    }, {
+        threshold: 0.1
+    });
+    
+    fadeElements.forEach(el => {
+        observer.observe(el);
+    });
 }
 
 // تهيئة التطبيق عند تحميل الصفحة
