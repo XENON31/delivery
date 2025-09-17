@@ -1,7 +1,7 @@
 // إدارة الحالة العامة للتطبيق
 const App = {
     currentUser: localStorage.getItem('currentUser') || 'زائر',
-    posts: JSON.parse(localStorage.getItem('posts')) || [],
+    posts: [],
     filters: {
         city: '',
         market: '',
@@ -18,7 +18,7 @@ function initApp() {
     
     // تحديث واجهة المستخدم
     updateUserDisplay();
-    loadPosts();
+    loadPostsFromServer();
     setupEventListeners();
     updateFilterOptions();
     
@@ -32,23 +32,62 @@ function initApp() {
     setTimeout(setupScrollAnimations, 500);
 }
 
-// تحديث عرض اسم المستخدم
-function updateUserDisplay() {
-    document.getElementById('current-user').textContent = App.currentUser;
+// محاكاة قاعدة بيانات باستخدام localStorage
+const DB = {
+    // الحصول على جميع الطلبات
+    getAllPosts: function() {
+        const posts = JSON.parse(localStorage.getItem('deliveryAppPosts')) || [];
+        return posts;
+    },
     
-    // إظهار/إخفاء عناصر تسجيل الدخول
-    if (App.currentUser !== 'زائر') {
-        document.getElementById('login-nav-item').classList.add('d-none');
-        document.getElementById('user-nav-item').classList.remove('d-none');
-        document.getElementById('user-name').value = App.currentUser;
-    } else {
-        document.getElementById('login-nav-item').classList.remove('d-none');
-        document.getElementById('user-nav-item').classList.add('d-none');
+    // حفظ الطلبات
+    savePosts: function(posts) {
+        localStorage.setItem('deliveryAppPosts', JSON.stringify(posts));
+    },
+    
+    // إضافة طلب جديد
+    addPost: function(post) {
+        const posts = this.getAllPosts();
+        posts.unshift(post);
+        this.savePosts(posts);
+        return posts;
+    },
+    
+    // تحديث طلب موجود
+    updatePost: function(postId, updates) {
+        const posts = this.getAllPosts();
+        const postIndex = posts.findIndex(post => post.id === postId);
+        
+        if (postIndex !== -1) {
+            posts[postIndex] = { ...posts[postIndex], ...updates };
+            this.savePosts(posts);
+            return true;
+        }
+        return false;
+    },
+    
+    // حذف طلب
+    deletePost: function(postId) {
+        const posts = this.getAllPosts();
+        const filteredPosts = posts.filter(post => post.id !== postId);
+        this.savePosts(filteredPosts);
+        return filteredPosts;
     }
+};
+
+// تحميل المنشورات من "الخادم" (localStorage)
+function loadPostsFromServer() {
+    App.posts = DB.getAllPosts();
+    renderPosts();
 }
 
-// تحميل وعرض المنشورات
-function loadPosts() {
+// حفظ المنشورات إلى "الخادم" (localStorage)
+function savePostsToServer() {
+    DB.savePosts(App.posts);
+}
+
+// عرض المنشورات
+function renderPosts() {
     const postsContainer = document.getElementById('posts-container');
     postsContainer.innerHTML = '';
     
@@ -89,6 +128,21 @@ function loadPosts() {
     
     // تفعيل تأثيرات التمرير بعد تحميل المحتوى
     setTimeout(setupScrollAnimations, 100);
+}
+
+// تحديث عرض اسم المستخدم
+function updateUserDisplay() {
+    document.getElementById('current-user').textContent = App.currentUser;
+    
+    // إظهار/إخفاء عناصر تسجيل الدخول
+    if (App.currentUser !== 'زائر') {
+        document.getElementById('login-nav-item').classList.add('d-none');
+        document.getElementById('user-nav-item').classList.remove('d-none');
+        document.getElementById('user-name').value = App.currentUser;
+    } else {
+        document.getElementById('login-nav-item').classList.remove('d-none');
+        document.getElementById('user-nav-item').classList.add('d-none');
+    }
 }
 
 // إنشاء عنصر منشور
@@ -299,9 +353,11 @@ function handlePostSubmit() {
         rating: 0
     };
     
-    App.posts.unshift(newPost);
-    savePosts();
-    loadPosts();
+    // حفظ الطلب في "قاعدة البيانات"
+    DB.addPost(newPost);
+    
+    // تحديث التطبيق بالبيانات الجديدة
+    loadPostsFromServer();
     
     // إغلاق النافذة المنبثقة
     const modal = bootstrap.Modal.getInstance(document.getElementById('create-post-modal'));
@@ -332,33 +388,41 @@ function handleLogin() {
 
 // استلام طلب
 function acceptPost(postId) {
-    const postIndex = App.posts.findIndex(post => post.id === postId);
+    const success = DB.updatePost(postId, {
+        accepted: true,
+        acceptedBy: App.currentUser
+    });
     
-    if (postIndex !== -1) {
-        App.posts[postIndex].accepted = true;
-        App.posts[postIndex].acceptedBy = App.currentUser;
-        savePosts();
-        loadPosts();
+    if (success) {
+        // تحديث التطبيق بالبيانات الجديدة
+        loadPostsFromServer();
         
         // إشعار للمستخدم
-        showNotification(`لقد استلمت الطلب بنجاح! يرجى التواصل مع ${App.posts[postIndex].author} لترتيب عملية التوصيل`, 'success');
+        const post = DB.getAllPosts().find(p => p.id === postId);
+        showNotification(`لقد استلمت الطلب بنجاح! يرجى التواصل مع ${post.author} لترتيب عملية التوصيل`, 'success');
     }
 }
 
 // إلغاء طلب
 function cancelPost(postId) {
     if (confirm('هل أنت متأكد من إلغاء هذا الطلب؟')) {
-        const postIndex = App.posts.findIndex(post => post.id === postId);
+        const posts = DB.getAllPosts();
+        const postIndex = posts.findIndex(post => post.id === postId);
         
         if (postIndex !== -1) {
+            const post = posts[postIndex];
+            
             // إذا كان الطلب مستلمًا، نرسل إشعارًا
-            if (App.posts[postIndex].accepted) {
-                showNotification(`تم إلغاء الطلب. سيتم إخطار ${App.posts[postIndex].acceptedBy} بالإلغاء`, 'info');
+            if (post.accepted) {
+                showNotification(`تم إلغاء الطلب. سيتم إخطار ${post.acceptedBy} بالإلغاء`, 'info');
             }
             
-            App.posts.splice(postIndex, 1);
-            savePosts();
-            loadPosts();
+            // حذف الطلب من "قاعدة البيانات"
+            DB.deletePost(postId);
+            
+            // تحديث التطبيق بالبيانات الجديدة
+            loadPostsFromServer();
+            
             showNotification('تم إلغاء الطلب بنجاح', 'success');
         }
     }
@@ -369,7 +433,7 @@ function applyFilters() {
     App.filters.city = document.getElementById('filter-city').value;
     App.filters.market = document.getElementById('filter-market').value;
     App.filters.type = document.getElementById('filter-type').value;
-    loadPosts();
+    renderPosts();
 }
 
 // إعادة ضبط التصفية
@@ -380,7 +444,7 @@ function clearFilters() {
     App.filters.city = '';
     App.filters.market = '';
     App.filters.type = '';
-    loadPosts();
+    renderPosts();
 }
 
 // تحديث خيارات التصفية
@@ -393,6 +457,7 @@ function updateFilterOptions() {
     const types = [...new Set(App.posts.map(post => post.type))];
     
     // تحديث خيارات السوق
+    marketFilter.innerHTML = '<option value="">جميع الأسواق</option>';
     markets.forEach(market => {
         if (market) {
             const option = document.createElement('option');
@@ -403,6 +468,7 @@ function updateFilterOptions() {
     });
     
     // تحديث خيارات النوع
+    typeFilter.innerHTML = '<option value="">جميع الأنواع</option>';
     types.forEach(type => {
         if (type) {
             const option = document.createElement('option');
@@ -449,11 +515,6 @@ function showPage(page) {
     
     // التمرير إلى الأعلى
     window.scrollTo(0, 0);
-}
-
-// حفظ المنشورات في localStorage
-function savePosts() {
-    localStorage.setItem('posts', JSON.stringify(App.posts));
 }
 
 // تبديل السمة
